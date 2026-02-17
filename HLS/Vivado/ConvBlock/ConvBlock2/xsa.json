@@ -1,0 +1,85 @@
+{
+    "versionMajor": "0",
+    "versionMinor": "0",
+    "usesPR": "false",
+    "platformState": "pre_synth",
+    "topModuleName": "design_1_wrapper",
+    "acceleratorBinaryFormat": "xclbin2",
+    "acceleratorBinaryContent": "bitstream",
+    "validAcceleratorBinaryContentValues": "dcp,bitstream",
+    "dcpFunctionStripped": "false",
+    "dcpEncrypted": "false",
+    "defaultOutputType": "hw_export",
+    "designIntent": {
+        "dataCenter": {
+            "value": "false",
+            "explicit": "false"
+        },
+        "embedded": {
+            "value": "false",
+            "explicit": "false"
+        },
+        "externalHost": {
+            "value": "false",
+            "explicit": "false"
+        },
+        "serverManaged": {
+            "value": "false",
+            "explicit": "false"
+        }
+    },
+    "board": {
+        "name": "xilinx.com:zcu102:3.4",
+        "vendor": "xilinx.com",
+        "part": "xczu9eg-ffvb1156-2-e",
+        "boardPart": "xilinx.com:zcu102:part0:3.4",
+        "imageFileHdpi": "zcu102_board.jpeg"
+    },
+    "devices": [
+        {
+            "name": "fpga0",
+            "type": "8",
+            "fpgaPart": "zynquplus:xczu9eg:ffvb1156:-2:e",
+            "part": {
+                "name": "xczu9eg-ffvb1156-2-e",
+                "architecture": "zynquplus",
+                "device": "xczu9eg",
+                "package": "ffvb1156",
+                "speedGrade": "-2",
+                "tempGrade": "e"
+            },
+            "core": {
+                "name": "OCL_REGION_0",
+                "type": "clc_region",
+                "numComputeUnits": "60"
+            }
+        }
+    ],
+    "files": [
+        {
+            "name": "ConvBlock2.bit",
+            "type": "FULL_BIT"
+        }
+    ],
+    "vendor": "xilinx",
+    "boardId": "zcu102",
+    "description": "Vivado generated Hardware Platform",
+    "uniqueName": "xilinx:zcu102::0.0",
+    "fpgaPart": "zynquplus",
+    "fpgaDevice": "xczu9eg",
+    "unifiedPlatform": "true",
+    "expandablePlatform": "false",
+    "hardware": "true",
+    "softwareEmulation": "true",
+    "hardwareEmulation": "false",
+    "hardwareEmuPlatform": "false",
+    "usesNIFD": "false",
+    "generatedName": "Vivado",
+    "generatedVersion": "2024.2",
+    "generatedChangeList": "5239630",
+    "generatedIpChangeList": "5239520",
+    "generatedSharedDataChangeList": "5239561",
+    "generatedTimestamp": "Sat Feb  7 11:12:17 2026",
+    "idCode": "0484a093"
+}
+

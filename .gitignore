@@ -1,1 +1,24 @@
 .ipynb_checkpoints
+
+
+# --- Vivado Temporary/Generated Files ---
+*.log
+*.jou
+*.str
+*.os
+*.pb
+*.dcp
+.Xil/
+*.v
+*.vhdl
+
+# --- Project Specific Directories to Ignore ---
+**/ConvBlock.cache/
+**/ConvBlock.hw/
+**/ConvBlock.ip_user_files/
+**/ConvBlock.runs/
+**/ConvBlock.gen/
+**/ConvBlock.sim/
+
+# --- HLS Generated Files ---
+**/solution1/
