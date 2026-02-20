@@ -5,6 +5,12 @@
 
 ---
 
+## Demo
+
+[![Demo Video](https://img.youtube.com/vi/qymDbAOg1Cg/0.jpg)](https://youtu.be/qymDbAOg1Cg)
+
+---
+
 ## Project Overview
 
 This project builds a complete hardware-accelerated object detection pipeline from scratch on the Xilinx ZCU102 (Zynq UltraScale+). The Tiny-YOLO v2 model runs with all 10 convolutional layers offloaded to the FPGA programmable logic via a custom HLS IP, while the ARM PS handles preprocessing, weight loading, and YOLO post-processing.
