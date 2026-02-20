@@ -1,16 +1,3 @@
-"""
-Tiny-YOLO Object Detection with OpenCV
-========================================
-Standalone inference script for the trained Tiny-YOLO model.
-Supports webcam, video files, and image files.
-
-Usage:
-    python run_yolo_opencv.py                    # Webcam
-    python run_yolo_opencv.py --image photo.jpg  # Single image
-    python run_yolo_opencv.py --video video.mp4  # Video file
-    python run_yolo_opencv.py --camera 1         # Different camera index
-"""
-
 import torch
 import torch.nn as nn
 import numpy as np
