@@ -18,7 +18,7 @@
     "components": {
       "conv_engine_0": {
         "vlnv": "xilinx.com:hls:conv_engine:1.0",
-        "ip_revision": "2114473721",
+        "ip_revision": "2114486138",
         "xci_name": "tinyyolo_overlay_conv_engine_0_0",
         "xci_path": "ip/tinyyolo_overlay_conv_engine_0_0/tinyyolo_overlay_conv_engine_0_0.xci",
         "inst_hier_path": "conv_engine_0",
@@ -336,17 +336,17 @@
       "rst_ps8_0_96M_peripheral_aresetn": {
         "ports": [
           "rst_ps8_0_96M/peripheral_aresetn",
-          "conv_engine_0/ap_rst_n",
-          "axi_smc/aresetn"
+          "axi_smc/aresetn",
+          "conv_engine_0/ap_rst_n"
         ]
       },
       "zynq_ultra_ps_e_0_pl_clk0": {
         "ports": [
           "zynq_ultra_ps_e_0/pl_clk0",
-          "conv_engine_0/ap_clk",
           "axi_smc/aclk",
           "rst_ps8_0_96M/slowest_sync_clk",
-          "zynq_ultra_ps_e_0/maxihpm0_fpd_aclk"
+          "zynq_ultra_ps_e_0/maxihpm0_fpd_aclk",
+          "conv_engine_0/ap_clk"
         ]
       },
       "zynq_ultra_ps_e_0_pl_resetn0": {

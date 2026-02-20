@@ -1,24 +1,79 @@
-.ipynb_checkpoints
+# ==================================================
+# Jupyter Notebooks
+# ==================================================
+.ipynb_checkpoints/
 
+# ==================================================
+# HLS Generated Files
+# ==================================================
+**/solution1/
 
-# --- Vivado Temporary/Generated Files ---
-*.log
-*.jou
-*.str
-*.os
-*.pb
-*.dcp
-.Xil/
-*.v
-*.vhdl
-
-# --- Project Specific Directories to Ignore ---
+# ==================================================
+# Vivado Project - Core Directories
+# ==================================================
 **/ConvBlock.cache/
 **/ConvBlock.hw/
 **/ConvBlock.ip_user_files/
-**/ConvBlock.runs/
 **/ConvBlock.gen/
 **/ConvBlock.sim/
+.Xil/
 
-# --- HLS Generated Files ---
-**/solution1/
+# ==================================================
+# Vivado Runs - Keep Reports, Exclude Large Files
+# ==================================================
+# NOTE: Do NOT use **/ConvBlock.runs/ here - it would ignore the entire directory
+#       and prevent the negation patterns below from working
+
+# Exclude large binary files (netlists, bitstreams, checkpoints)
+**/ConvBlock.runs/**/*.dcp
+**/ConvBlock.runs/**/*.bit
+**/ConvBlock.runs/**/*.bin
+**/ConvBlock.runs/**/*.mcs
+**/ConvBlock.runs/**/*.ltx
+**/ConvBlock.runs/**/*.edf
+**/ConvBlock.runs/**/*.edif
+**/ConvBlock.runs/**/*.ngc
+**/ConvBlock.runs/**/*.sdf
+
+# Exclude generated HDL (wrappers and netlists)
+**/ConvBlock.runs/**/*_wrapper.v
+**/ConvBlock.runs/**/*_wrapper.vhd
+**/ConvBlock.runs/**/*_funcsim.v
+**/ConvBlock.runs/**/*_funcsim.vhdl
+**/ConvBlock.runs/**/*_timesim.v
+**/ConvBlock.runs/**/*_timesim.vhdl
+
+# Exclude intermediate synthesis files
+**/ConvBlock.runs/**/*.pb
+**/ConvBlock.runs/**/*.os
+**/ConvBlock.runs/**/.vivado.*
+**/ConvBlock.runs/**/ISEWrap.js
+**/ConvBlock.runs/**/ISEWrap.sh
+**/ConvBlock.runs/**/fsm_encoding.os
+
+# Exclude Vivado journal files in runs
+**/ConvBlock.runs/**/vivado.jou
+**/ConvBlock.runs/**/vivado.pb
+
+# KEEP: Reports and useful output files (negation patterns)
+!**/ConvBlock.runs/**/*.rpt
+!**/ConvBlock.runs/**/*.txt
+!**/ConvBlock.runs/**/*.xml
+!**/ConvBlock.runs/**/runme.sh
+!**/ConvBlock.runs/**/runme.bat
+
+# ==================================================
+# Vivado Root-Level Logs and Temporary Files
+# ==================================================
+vivado*.jou
+vivado*.log
+vivado*.str
+vivado*.zip
+*.backup.*
+*.bak
+
+# ==================================================
+# Generated Wrapper Files (Source Level)
+# ==================================================
+*_wrapper.v
+*_wrapper.vhd

@@ -1,0 +1,36 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"0.969617",
+   "Default View_TopLeft":"-572,-607",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.8.0 2024-04-26 e1825d835c VDI=44 GEI=38 GUI=JA:21.0 TLS
+#  -string -flagsOSRD
+preplace inst conv_engine_1 -pg 1 -lvl 1 -x 110 -y -310 -defaultsOSRD
+preplace inst rst_ps8_0_99M -pg 1 -lvl 1 -x 110 -y -80 -defaultsOSRD
+preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 3 -x 950 -y -240 -defaultsOSRD
+preplace inst smartconnect_0 -pg 1 -lvl 2 -x 480 -y -530 -defaultsOSRD
+preplace inst smartconnect_1 -pg 1 -lvl 2 -x 480 -y -390 -defaultsOSRD
+preplace inst smartconnect_2 -pg 1 -lvl 2 -x 480 -y -250 -defaultsOSRD
+preplace inst smartconnect_3 -pg 1 -lvl 2 -x 480 -y -110 -defaultsOSRD
+preplace inst smartconnect_4 -pg 1 -lvl 2 -x 480 -y 50 -defaultsOSRD -orient R180
+preplace netloc rst_ps8_0_99M_peripheral_aresetn 1 0 2 -70 -410 290
+preplace netloc zynq_ultra_ps_e_0_pl_clk0 1 0 4 -90 -420 320 140 630 -390 1270
+preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 0 4 -70 -180 300 -30 N -30 1260
+preplace netloc Net 1 1 2 340 130 620
+preplace netloc conv_engine_1_m_axi_gmem0 1 1 1 310 -550n
+preplace netloc conv_engine_1_m_axi_gmem1 1 1 1 330 -410n
+preplace netloc conv_engine_1_m_axi_gmem2 1 1 1 330 -310n
+preplace netloc conv_engine_1_m_axi_gmem3 1 1 1 310 -290n
+preplace netloc smartconnect_0_M00_AXI 1 2 1 640 -530n
+preplace netloc smartconnect_1_M00_AXI 1 2 1 620 -390n
+preplace netloc smartconnect_2_M00_AXI 1 2 1 620 -290n
+preplace netloc smartconnect_3_M00_AXI 1 2 1 640 -270n
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 2 2 NJ 70 1280
+preplace netloc smartconnect_4_M00_AXI 1 0 2 -80 50 N
+levelinfo -pg 1 -120 110 480 950 1300
+pagesize -pg 1 -db -bbox -sgen -120 -610 1780 990
+"
+}
+{
+   "da_clkrst_cnt":"3"
+}
