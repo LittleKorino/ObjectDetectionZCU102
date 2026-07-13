@@ -79,5 +79,5 @@ vivado*.zip
 *_wrapper.vhd
 
 # For all .v and .vhdl files
-**/*\.v
-**/*\.vhdl
+*.v
+*.vhdl
