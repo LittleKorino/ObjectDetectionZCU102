@@ -16,8 +16,8 @@
  *  6. TILE_OC/TILE_IC = 16: 256 MACs/cycle (51.2 GMAC/s)
  *  7. vec_t 256-bit for 16-element stream packing
  */
-#ifndef CONV_ENGINE_V3_H
-#define CONV_ENGINE_V3_H
+#ifndef CONV_ENGINE_H
+#define CONV_ENGINE_H
 
 #include <hls_stream.h>
 #include <ap_fixed.h>
