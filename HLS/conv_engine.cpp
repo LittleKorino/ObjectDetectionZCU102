@@ -32,7 +32,7 @@
  *  Tiny-YOLO: ~3.5 GMAC total → ~68ms compute → ~15 FPS
  *  (vs 0.3 FPS in V1 — 160-200× improvement)
  */
-#include "conv_engine_v3.h"
+#include "conv_engine.h"
 
 /* =========================================================================
  * HELPER: Activation (inlined — becomes combinational logic)
