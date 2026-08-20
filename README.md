@@ -133,7 +133,8 @@ Key V3 breakthroughs:
 
 Build:
 ```bash
-vitis-run --mode hls --tcl HLS/run_hls.tcl
+cd HLS/
+vitis-run --mode hls --tcl run_hls.tcl
 ```
 
 ---
