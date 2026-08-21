@@ -81,3 +81,7 @@ vivado*.zip
 # For all .v and .vhdl files
 *.v
 *.vhdl
+
+logs/
+artifacts/
+
