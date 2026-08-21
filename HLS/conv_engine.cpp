@@ -51,7 +51,7 @@ static data_t activate(data_t x, int use_leaky) {
 }
 
 /* =========================================================================
- * HELPER: Extract 16-bit element from 256-bit word
+ * HELPER: Extract 16-bit element from 128-bit word
  * Verilog analogy: wire [15:0] elem = word[slot*16 +: 16];
  * ========================================================================= */
 static inline data_t extract_elem(wide_t word, int slot) {
@@ -62,7 +62,7 @@ static inline data_t extract_elem(wide_t word, int slot) {
 }
 
 /* =========================================================================
- * HELPER: Insert 16-bit element into 256-bit word
+ * HELPER: Insert 16-bit element into 128-bit word
  * Verilog analogy: word[slot*16 +: 16] <= elem;
  * ========================================================================= */
 static inline void insert_elem(wide_t& word, int slot, data_t val) {
@@ -81,7 +81,7 @@ static inline void insert_elem(wide_t& word, int slot, data_t val) {
  *
  *  ┌──────────┐     ┌───────────┐     ┌─────────────┐
  *  │  DRAM    │────→│ DMA line  │────→│ input_cache  │────→ stream
- *  │ (m_axi)  │     │ buf [4]   │     │ [16][35][35] │  (reused ×OC)
+ *  │ (m_axi)  │     │ buf [6]   │     │ [16][35][35] │  (reused ×OC)
  *  └──────────┘     └───────────┘     └─────────────┘
  *
  * ========================================================================= */
@@ -167,12 +167,12 @@ void Fetch_Layer(
                                 int row_base  = (abs_ic * in_height + r_idx) * in_width;
                                 int elem_lo   = row_base + w_base + c_lo;
                                 int elem_hi   = row_base + w_base + c_hi - 1;
-                                int first_word = elem_lo >> 4;
-                                int last_word  = elem_hi >> 4;
+                                int first_word = elem_lo >> WORD_SHIFT;
+                                int last_word  = elem_hi >> WORD_SHIFT;
                                 int n_words    = last_word - first_word + 1;
 
                                 DMA_IN_BURST: for (int w = 0; w < n_words; w++) {
-                                #pragma HLS LOOP_TRIPCOUNT min=1 max=4 avg=2
+                                #pragma HLS LOOP_TRIPCOUNT min=1 max=6 avg=3
                                     #pragma HLS PIPELINE II=1
                                     dma_line[w] = input_dram[first_word + w];
                                 }
@@ -181,8 +181,8 @@ void Fetch_Layer(
                                 #pragma HLS LOOP_TRIPCOUNT min=1 max=35 avg=16
                                     #pragma HLS PIPELINE II=1
                                     int abs_idx = row_base + w_base + j;
-                                    int wi = (abs_idx >> 4) - first_word;
-                                    int si =  abs_idx & 0xF;
+                                    int wi = (abs_idx >> WORD_SHIFT) - first_word;
+                                    int si =  abs_idx & WORD_MASK;
                                     input_cache[ic][i][j] = extract_elem(dma_line[wi], si);
                                 }
                             }
@@ -236,12 +236,12 @@ void Fetch_Layer(
                         int oc_abs = oc_base + oc;
                         int block_start = (oc_abs * in_channels + ic_base) * kernel_size * kernel_size;
                         int block_elems = ic_valid * kernel_size * kernel_size;
-                        int fw = block_start >> 4;
-                        int lw = (block_start + block_elems - 1) >> 4;
+                        int fw = block_start >> WORD_SHIFT;
+                        int lw = (block_start + block_elems - 1) >> WORD_SHIFT;
                         int nw = lw - fw + 1;
 
                         DMA_WT_BURST: for (int w = 0; w < nw; w++) {
-                        #pragma HLS LOOP_TRIPCOUNT min=1 max=12 avg=9
+                        #pragma HLS LOOP_TRIPCOUNT min=1 max=19 avg=18
                             #pragma HLS PIPELINE II=1
                             dma_wt[w] = weights_dram[fw + w];
                         }
@@ -256,8 +256,8 @@ void Fetch_Layer(
                                     int flat = block_start
                                              + ic * kernel_size * kernel_size
                                              + ky * kernel_size + kx;
-                                    int wi = (flat >> 4) - fw;
-                                    int si =  flat & 0xF;
+                                    int wi = (flat >> WORD_SHIFT) - fw;
+                                    int si =  flat & WORD_MASK;
                                     weight_cache[oc][ic][ky][kx]
                                         = extract_elem(dma_wt[wi], si);
                                 }
@@ -634,10 +634,10 @@ void Write_Layer(
                             int out_r = (r_start / pool_stride) + pi;
                             int out_c = c_start / pool_stride;
                             int base_idx = (global_oc * final_h + out_r) * final_w + out_c;
-                            int first_word = base_idx >> 4;
-                            int start_slot = base_idx & 0xF;
+                            int first_word = base_idx >> WORD_SHIFT;
+                            int start_slot = base_idx & WORD_MASK;
                             int end_idx    = base_idx + pw - 1;
-                            int last_word  = end_idx >> 4;
+                            int last_word  = end_idx >> WORD_SHIFT;
                             int n_words    = last_word - first_word + 1;
 
                             /* -- Step 2c: Read edge words (Verilog: AXI read) --
@@ -647,7 +647,8 @@ void Write_Layer(
                             #pragma HLS LOOP_TRIPCOUNT min=1 max=2 avg=1
                                 #pragma HLS PIPELINE II=1
                                 if ((w == 0 && start_slot != 0) ||
-                                    (w == n_words - 1 && (end_idx & 0xF) != 15)) {
+                                    (w == n_words - 1 &&
+                                     (end_idx & WORD_MASK) != WORD_MASK)) {
                                     dma_out[w] = output_dram[first_word + w];
                                 } else {
                                     dma_out[w] = (wide_t)0;
@@ -661,8 +662,8 @@ void Write_Layer(
                             #pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=4
                                 #pragma HLS PIPELINE II=1
                                 int flat = base_idx + pj;
-                                int wi   = (flat >> 4) - first_word;
-                                int si   =  flat & 0xF;
+                                int wi   = (flat >> WORD_SHIFT) - first_word;
+                                int si   =  flat & WORD_MASK;
                                 insert_elem(dma_out[wi], si, pool_row[pj]);
                             }
 
@@ -688,20 +689,21 @@ void Write_Layer(
 
                             /* -- Step 2b: Address decode for this output row -- */
                             int base_idx   = (global_oc * out_height + r_start + i) * out_width + c_start;
-                            int first_word = base_idx >> 4;
-                            int start_slot = base_idx & 0xF;
+                            int first_word = base_idx >> WORD_SHIFT;
+                            int start_slot = base_idx & WORD_MASK;
                             int end_idx    = base_idx + curr_w - 1;
-                            int last_word  = end_idx >> 4;
+                            int last_word  = end_idx >> WORD_SHIFT;
                             int n_words    = last_word - first_word + 1;
 
                             /* -- Step 2c: Read edge words (Verilog: AXI read) --
                              * Only partial words need read-modify-write.
                              * Full words are overwritten completely. */
                             EDGE_RD_DIRECT: for (int w = 0; w < n_words; w++) {
-                            #pragma HLS LOOP_TRIPCOUNT min=1 max=2 avg=1
+                            #pragma HLS LOOP_TRIPCOUNT min=1 max=3 avg=2
                                 #pragma HLS PIPELINE II=1
                                 if ((w == 0 && start_slot != 0) ||
-                                    (w == n_words - 1 && (end_idx & 0xF) != 15)) {
+                                    (w == n_words - 1 &&
+                                     (end_idx & WORD_MASK) != WORD_MASK)) {
                                     dma_out[w] = output_dram[first_word + w];
                                 } else {
                                     dma_out[w] = (wide_t)0;
@@ -715,8 +717,8 @@ void Write_Layer(
                             #pragma HLS LOOP_TRIPCOUNT min=1 max=16 avg=16
                                 #pragma HLS PIPELINE II=1
                                 int flat = base_idx + j;
-                                int wi   = (flat >> 4) - first_word;
-                                int si   =  flat & 0xF;
+                                int wi   = (flat >> WORD_SHIFT) - first_word;
+                                int si   =  flat & WORD_MASK;
                                 insert_elem(dma_out[wi], si, tile_buf[oc][i][j]);
                             }
 
@@ -724,7 +726,7 @@ void Write_Layer(
                              * Clean sequential loop. No conditionals.
                              * Verilog: AXI AWLEN=n_words-1, AWBURST=INCR, WVALID toggling */
                             BURST_WR_DIRECT: for (int w = 0; w < n_words; w++) {
-                            #pragma HLS LOOP_TRIPCOUNT min=1 max=2 avg=1
+                            #pragma HLS LOOP_TRIPCOUNT min=1 max=3 avg=2
                                 #pragma HLS PIPELINE II=1
                                 output_dram[first_word + w] = dma_out[w];
                             }
@@ -786,10 +788,10 @@ static void conv_dataflow(
  * Verilog analogy: top-level port map & AXI protocol wrapper
  *
  * Port mapping:
- *   gmem0 (256-bit, READ)  ← input_dram   (activations)
- *   gmem1 (256-bit, R/W)   ← output_dram  (output feature map)
- *   gmem2 (256-bit, READ)  ← weights_dram (convolution weights)
- *   gmem3 (16-bit,  READ)  ← bn_params    (batch-norm scale/bias)
+ *   gmem0 (128-bit, READ)  ← input_dram   (activations)
+ *   gmem1 (128-bit, R/W)   ← output_dram  (output feature map)
+ *   gmem2 (128-bit, READ)  ← weights_dram (convolution weights)
+ *   gmem3 (32-bit,  READ)  ← bn_params    (batch-norm scale/bias)
  *   s_axi_control           ← all scalar parameters
  * ========================================================================= */
 extern "C" void conv_engine(
@@ -805,14 +807,15 @@ extern "C" void conv_engine(
 ) {
     /* ---- AXI master ports (Verilog: AXI4 master interfaces) ----
      * max_read/write_burst_length enables the DMA staging approach.
-     * Burst length 64 × 256 bits = 2048 bytes per AXI transaction. */
+     * Burst length 64 × 128 bits = 1024 bytes per AXI transaction. */
     #pragma HLS INTERFACE m_axi port=input_dram    bundle=gmem0 depth=1000000 \
         max_read_burst_length=64
     #pragma HLS INTERFACE m_axi port=output_dram   bundle=gmem1 depth=1000000 \
         max_read_burst_length=64 max_write_burst_length=64
     #pragma HLS INTERFACE m_axi port=weights_dram  bundle=gmem2 depth=5000000 \
         max_read_burst_length=64
-    #pragma HLS INTERFACE m_axi port=bn_params_dram bundle=gmem3 depth=4096
+    #pragma HLS INTERFACE m_axi port=bn_params_dram bundle=gmem3 depth=4096 \
+        max_read_burst_length=64
 
     /* ---- AXI-Lite slave control (Verilog: s_axi_control register bank) ---- */
     #pragma HLS INTERFACE s_axilite port=input_dram     bundle=control

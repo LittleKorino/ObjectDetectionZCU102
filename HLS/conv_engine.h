@@ -38,13 +38,15 @@
  * ========================================================================= */
 typedef ap_fixed<16, 8, AP_RND, AP_SAT>  data_t;   /* 16-bit activation/weight  */
 typedef ap_fixed<32, 16, AP_RND, AP_SAT> acc_t;    /* 32-bit MAC accumulator    */
-typedef ap_int<256>   wide_t;                        /* 256-bit DRAM word (m_axi) */
+typedef ap_int<128>   wide_t;                        /* 128-bit DRAM word (m_axi) */
 typedef ap_uint<256>  vec_t;                         /* 256-bit stream word (16×16b) */
 
 /* =========================================================================
  * DERIVED CONSTANTS — computed at compile time (like Verilog parameters)
  * ========================================================================= */
-#define ELEMS_PER_WORD  16                           /* 256 / 16 bits             */
+#define ELEMS_PER_WORD  8                            /* 128 / 16 bits             */
+#define WORD_SHIFT      3                            /* log2(ELEMS_PER_WORD)       */
+#define WORD_MASK       (ELEMS_PER_WORD - 1)
 #define MAX_STRIDE      2
 #define CACHE_H  (TILE_H * MAX_STRIDE + K_MAX - 1)  /* 35                        */
 #define CACHE_W  (TILE_W * MAX_STRIDE + K_MAX - 1)  /* 35                        */
@@ -60,19 +62,17 @@ typedef ap_uint<256>  vec_t;                         /* 256-bit stream word (16�
  * separate AXI read/write channel FIFOs.
  * ========================================================================= */
 
-/* Input line DMA: burst-reads one full row of the input tile
- * Max row width = CACHE_W = 35 elements → ceil(35/16)+1 = 4 words          */
-#define DMA_LINE_WORDS  4
+/* Input line DMA: burst-reads one full row of the input tile.
+ * An unaligned 35-element row can span up to 6 128-bit words.               */
+#define DMA_LINE_WORDS  6
 
 /* Weight block DMA: burst-reads all weights for one OC channel × all IC
- * 16 IC × K_MAX² = 16×9 = 144 elements = 9 words
- * But weights for consecutive IC channels may span word boundaries,
- * so over-allocate: ceil((144+15) / 16)+1+1 = 12 words                     */
-#define DMA_WT_WORDS    12
+ * 16 IC × K_MAX² = 16×9 = 144 elements = 18 aligned words.
+ * An unaligned block can span up to 19 128-bit words.                       */
+#define DMA_WT_WORDS    19
 
-/* Output row DMA: stages one packed output row before burst-writing
- * Max output width = 416 → ceil(416/16)+1 = 27 words                       */
-#define DMA_OUT_WORDS   28
+/* Output row DMA: a TILE_W=16 row can span up to 3 unaligned words.         */
+#define DMA_OUT_WORDS   3
 
 /* =========================================================================
  * TOP-LEVEL PROTOTYPE

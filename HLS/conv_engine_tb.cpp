@@ -13,9 +13,10 @@ using namespace std;
 
 // Helper to unpack elements from wide words for verification
 data_t unpack_element(const wide_t* dram, int idx) {
-    wide_t word = dram[idx/16];
+    wide_t word = dram[idx / ELEMS_PER_WORD];
     data_t val;
-    val.range(15,0) = word.range((idx%16)*16+15, (idx%16)*16);
+    int slot = idx % ELEMS_PER_WORD;
+    val.range(15,0) = word.range(slot*16+15, slot*16);
     return val;
 }
 
@@ -118,9 +119,9 @@ int run_test(const char* name,
     printf("  Conv output: %dx%d  Final output: %dx%d\n", OH, OW, final_h, final_w);
 
     // Allocate DRAM arrays (wide words + generous padding)
-    int in_size_words  = (IC * H * W) / 16 + 256;
-    int wt_size_words  = (OC * IC * K * K) / 16 + 256;
-    int out_size_words = (OC * final_h * final_w) / 16 + 256;
+    int in_size_words  = (IC * H * W + ELEMS_PER_WORD - 1) / ELEMS_PER_WORD + 256;
+    int wt_size_words  = (OC * IC * K * K + ELEMS_PER_WORD - 1) / ELEMS_PER_WORD + 256;
+    int out_size_words = (OC * final_h * final_w + ELEMS_PER_WORD - 1) / ELEMS_PER_WORD + 256;
 
     std::vector<wide_t> input_dram(in_size_words, 0);
     std::vector<wide_t> weights_dram(wt_size_words, 0);
@@ -137,8 +138,8 @@ int run_test(const char* name,
     for (int i = 0; i < IC * H * W; i++) {
         data_t val = (float)(i % 100) / 100.0f;
         input_flat[i] = val;
-        int word_idx = i / 16;
-        int sub_idx  = i % 16;
+        int word_idx = i / ELEMS_PER_WORD;
+        int sub_idx  = i % ELEMS_PER_WORD;
         input_dram[word_idx].range(sub_idx*16+15, sub_idx*16) = val.range(15, 0);
     }
 
@@ -146,8 +147,8 @@ int run_test(const char* name,
     for (int i = 0; i < OC * IC * K * K; i++) {
         data_t val = (float)((i % 7) - 3) / 10.0f; // range -0.3 to +0.3
         weight_flat[i] = val;
-        int word_idx = i / 16;
-        int sub_idx  = i % 16;
+        int word_idx = i / ELEMS_PER_WORD;
+        int sub_idx  = i % ELEMS_PER_WORD;
         weights_dram[word_idx].range(sub_idx*16+15, sub_idx*16) = val.range(15, 0);
     }
 
@@ -207,12 +208,12 @@ int main() {
     int failures = 0;
 
     // Test 1: Perfectly aligned (original test)
-    //   OH=OW=16, 16%16=0, single tile in all dims
+    //   OH=OW=16, 16%8=0, single tile in all dims
     failures += run_test("Aligned 16x16 IC=3 OC=16",
                          3, 16, 16, 16, 3, 1, 1, 0, 0, 0);
 
     // Test 2: Non-aligned width (single tile, partial fill)
-    //   OH=OW=13, 13%16!=0, verifies RMW write logic
+    //   OH=OW=13, 13%8!=0, verifies RMW write logic
     failures += run_test("Non-aligned 13x13 IC=3 OC=16",
                          3, 16, 13, 13, 3, 1, 1, 0, 0, 0);
 
@@ -223,12 +224,12 @@ int main() {
                          3, 32, 26, 26, 3, 1, 1, 0, 0, 0);
 
     // Test 4: Pooled output (aligned conv, aligned pool)
-    //   OH=OW=16 → pooled 8×8. 8 < 16 so single word per row.
+    //   OH=OW=16 → pooled 8×8. One aligned 128-bit word per row.
     failures += run_test("Pooled 16x16 IC=3 OC=16",
                          3, 16, 16, 16, 3, 1, 1, 1, 2, 0);
 
     // Test 5: Pooled with non-aligned pooled output
-    //   H=W=26 → OH=OW=26 → pooled 13×13, 13%16!=0
+    //   H=W=26 → OH=OW=26 → pooled 13×13, 13%8!=0
     failures += run_test("Pooled non-aligned 26x26 IC=3 OC=16",
                          3, 16, 26, 26, 3, 1, 1, 1, 2, 0);
 
